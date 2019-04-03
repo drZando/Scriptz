@@ -1,0 +1,3 @@
+# Zs-Scripts
+
+Mini Scriptli und Snipplets und Zügs do und sowieso...
