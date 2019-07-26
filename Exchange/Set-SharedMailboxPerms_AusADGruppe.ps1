@@ -1,9 +1,7 @@
-##########################################################################################################
-# Set-SharedMailboxPerms_AusADGruppe.ps1 
+﻿##########################################################################################################
+# Set-SharedMailboxPerms_AusADGruppe.ps1
 # 
 # Author: Z
-# Datum: 30.05.2017
-# Version: 1.0
 ##########################################################################################################
 # Powershell Script um Berechtigungen für Group-Mailbox zu setzten
 #
@@ -11,22 +9,24 @@
 # und setzt die FULLACCESS Berechtigung, für jedes Benutzerkonto, welches Mitglied der Gruppe ist,
 # auf die jeweilige Mailbox. Zusätzlich wird jedes Benutzerkonto auch berächtigt "im-Auftrag-von" zu senden
 ##########################################################################################################
-# Ufruef
-# C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NonInteractive -WindowStyle Hidden -command ". 'C:\Program Files\Microsoft\Exchange Server\V15\bin\RemoteExchange.ps1'; Connect-ExchangeServer -auto; C:\MedS\Scripts\Exchange\Set-MailboxPerms_AusADGruppe.ps1"
-##########################################################################################################
 # Release Notes:
-# V1.0 - 30.05.2017: Initialer Release
+# 1.1 - 26.07.2019: Verbindig zum Exchange via PSSession anstatt RemoteExchange.ps1 
+# 1.0 - 30.05.2017: Initialer Release
 ##########################################################################################################
-# Variable
-$MB_Perm_Gruppene = Get-ADGroup -Filter "Name -like 'GS_MX_MB-*_FC'" -Properties *
+$fqdnMailboxServer = "MB-SERVER.domain.tld"
 $trim_pre_grp = "GS_MX_MB-"
 $trim_post_grp = "_FC"
 $add_pre_usr = "mbo_"
-$MB_Srv_XCDatebank = Get-MailboxDatabase -Server $env:COMPUTERNAME | Where-Object{$_.Name -notlike "*archiv*"}
-$Tag_nid_automap = "z - nidmappe;"
+$Tag_nid_automap = "zanja - nidmappe;"
 
-# Büetz
+
+#------- Nütme alänge ------------------------------------------------------------------------------------
+$Session = New-PSSession -ConnectionURI "http://$fqdnMailboxServer/powershell?serializationLevel=Full" -ConfigurationName Microsoft.Exchange
+Import-PSSession $Session
 Import-Module ActiveDirectory
+
+$MB_Perm_Gruppene = Get-ADGroup -Filter "Name -like 'GS_MX_MB-*_FC'" -Properties *
+
 
 foreach($g in $MB_Perm_Gruppene){
     $MBO_Name = $null
@@ -37,13 +37,11 @@ foreach($g in $MB_Perm_Gruppene){
     $automap = $true
 
     $MBO_Name = $add_pre_usr+($g.name -replace $trim_pre_grp -replace $trim_post_grp)
-    $MB_Datebank = Get-Mailbox $MBO_Name -ErrorAction SilentlyContinue | select Database
     
     if($g.info){
         if($g.info.ToUpper() -eq $Tag_nid_automap.ToUpper()){$automap = $false}
     }
 
-    #if(($MB_Datebank) -and $MB_Datebank.Database.Name -eq $MB_Srv_XCDatebank.Name){
 
         $Soette_Raecht_ha = Get-ADGroupMember $g | Get-ADUser
 
@@ -63,7 +61,6 @@ foreach($g in $MB_Perm_Gruppene){
 
                    switch($diff.SideIndicator){
                       "=>" {Remove-MailboxPermission -Identity $($MBO_Name) -User $($diff.InputObject) -AccessRights FullAccess -Confirm:$false | Out-Null}
-                      #"<=" {Add-MailboxPermission @sjohjo | Out-Null}
                       "<=" {Add-MailboxPermission -Identity $MBO_Name -User $diff.InputObject -AccessRights FullAccess | Out-Null}
                   }
               }
@@ -86,6 +83,5 @@ foreach($g in $MB_Perm_Gruppene){
               }
           }
         }
-    #}
 }
 
