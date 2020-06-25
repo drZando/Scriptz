@@ -85,3 +85,4 @@ foreach($g in $MB_Perm_Gruppene){
         }
 }
 
+Remove-PSSession $Session

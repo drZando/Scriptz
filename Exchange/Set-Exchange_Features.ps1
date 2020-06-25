@@ -74,3 +74,5 @@ foreach($MB_Feature in $XC_MB_Features_Eigeschafte.Keys){
         }
     }
 }
+
+Remove-PSSession $Session

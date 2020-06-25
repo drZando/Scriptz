@@ -21,12 +21,13 @@ $MB_Quota_Warning_sub = 0.05GB
 $OA_Quota_Warning_sub = 0.5GB
 
 #------- Nütme alänge ------------------------------------------------------------------------------------
+Import-Module ActiveDirectory
 $AD_MB_Gruppene = Get-ADGroup -Filter "Name -like '$Pre_MBADG_String'"
 $AD_OA_Gruppene = Get-ADGroup -Filter "Name -like '$Pre_OAADG_String'"
 
 $Session = New-PSSession -ConnectionURI "http://$fqdnMailboxServer/powershell?serializationLevel=Full" -ConfigurationName Microsoft.Exchange
 Import-PSSession $Session
-Import-Module ActiveDirectory
+
 
 $z=$null
 foreach($z in $AD_MB_Gruppene){
@@ -57,3 +58,4 @@ foreach($z in $AD_OA_Gruppene){
         }
     }
 }
+Remove-PSSession $Session

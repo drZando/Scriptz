@@ -76,3 +76,4 @@ foreach($mb in $AuiBnutzerPostfaecher){
         Add-MailboxFolderPermission -Identity $KalaenderPfad -User anonymous -AccessRights None
     }
 }
+Remove-PSSession $Session
