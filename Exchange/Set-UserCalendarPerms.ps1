@@ -22,57 +22,57 @@ Import-PSSession $Session
 Import-Module -Name ActiveDirectory
 
 $MitglidrKalaenderRaechtADGruppe = Get-ADGroupMember $NameKalaenderRaechtADGruppe
-$AuiBnutzerPostfaecher = Get-mailbox * | Where-Object{$_.RecipientType -eq 'UserMailbox' -and $_.RecipientTypeDetails -eq 'UserMailbox'}
+$AuiBnutzerPostfaecher = Get-mailbox * | Where-Object { $_.RecipientType -eq 'UserMailbox' -and $_.RecipientTypeDetails -eq 'UserMailbox' }
 
-if((!($MitglidrKalaenderRaechtADGruppe)) -and (!($AuiBnutzerPostfaecher))){
+if ((!($MitglidrKalaenderRaechtADGruppe)) -and (!($AuiBnutzerPostfaecher))) {
 }
-elseif($MitglidrKalaenderRaechtADGruppe -and $AuiBnutzerPostfaecher){
+elseif ($MitglidrKalaenderRaechtADGruppe -and $AuiBnutzerPostfaecher) {
 
     $diffADMBs = Compare-Object -ReferenceObject $MitglidrKalaenderRaechtADGruppe.SamAccountName -DifferenceObject $AuiBnutzerPostfaecher.SamAccountName
     
-    foreach($u in $diffADMBs){
-            switch($u.SideIndicator){
-                    "=>" {Add-ADGroupMember -Identity $NameKalaenderRaechtADGruppe -members $u.InputObject}
-                    "<=" {Remove-ADGroupMember -Identity $NameKalaenderRaechtADGruppe -members $u.InputObject -Confirm:$false}
-            }
+    foreach ($u in $diffADMBs) {
+        switch ($u.SideIndicator) {
+            "=>" { Add-ADGroupMember -Identity $NameKalaenderRaechtADGruppe -members $u.InputObject }
+            "<=" { Remove-ADGroupMember -Identity $NameKalaenderRaechtADGruppe -members $u.InputObject -Confirm:$false }
+        }
     }
 }
-elseif(!($MitglidrKalaenderRaechtADGruppe)){
+elseif (!($MitglidrKalaenderRaechtADGruppe)) {
 
-    foreach($u in $AuiBnutzerPostfaecher){
+    foreach ($u in $AuiBnutzerPostfaecher) {
         Add-ADGroupMember -Identity $NameKalaenderRaechtADGruppe -members $u.SamAccountName
     } 
 }
-elseif(!($AuiBnutzerPostfaecher)){
+elseif (!($AuiBnutzerPostfaecher)) {
 
-    foreach($u in $MitglidrKalaenderRaechtADGruppe){
+    foreach ($u in $MitglidrKalaenderRaechtADGruppe) {
         Remove-ADGroupMember -Identity $NameKalaenderRaechtADGruppe -members $u.SamAccountName -Confirm:$false
     }
 }
 
-foreach($mb in $AuiBnutzerPostfaecher){
+foreach ($mb in $AuiBnutzerPostfaecher) {
     
-    $KalaenderName = Get-MailboxFolderStatistics -FolderScope calendar -Identity $mb.SamAccountName | Where-Object{$_.FolderType -eq "Calendar"} | select Name
-    $KalaenderPfad = $mb.SamAccountName +":\"+ $KalaenderName.Name
+    $KalaenderName = Get-MailboxFolderStatistics -FolderScope calendar -Identity $mb.SamAccountName | Where-Object { $_.FolderType -eq "Calendar" } | select Name
+    $KalaenderPfad = $mb.SamAccountName + ":\" + $KalaenderName.Name
 
-    if(Get-MailboxFolderPermission -Identity $KalaenderPfad -User $NameKalaenderRaechtADGruppe -ErrorAction SilentlyContinue){
+    if (Get-MailboxFolderPermission -Identity $KalaenderPfad -User $NameKalaenderRaechtADGruppe -ErrorAction SilentlyContinue) {
         Set-MailboxFolderPermission -Identity $KalaenderPfad -User $NameKalaenderRaechtADGruppe -AccessRights LimitedDetails
     }
-    else{
+    else {
         Add-MailboxFolderPermission -Identity $KalaenderPfad -User $NameKalaenderRaechtADGruppe -AccessRights LimitedDetails
     }
 
-    if(Get-MailboxFolderPermission -Identity $KalaenderPfad -User Default -ErrorAction SilentlyContinue){
+    if (Get-MailboxFolderPermission -Identity $KalaenderPfad -User Default -ErrorAction SilentlyContinue) {
         Set-MailboxFolderPermission -Identity $KalaenderPfad -User Default -AccessRights None
     }
-    else{
+    else {
         Add-MailboxFolderPermission -Identity $KalaenderPfad -User Default -AccessRights None
     }
 
-    if(Get-MailboxFolderPermission -Identity $KalaenderPfad -User anonymous -ErrorAction SilentlyContinue){
+    if (Get-MailboxFolderPermission -Identity $KalaenderPfad -User anonymous -ErrorAction SilentlyContinue) {
         Set-MailboxFolderPermission -Identity $KalaenderPfad -User anonymous -AccessRights None
     }
-    else{
+    else {
         Add-MailboxFolderPermission -Identity $KalaenderPfad -User anonymous -AccessRights None
     }
 }
