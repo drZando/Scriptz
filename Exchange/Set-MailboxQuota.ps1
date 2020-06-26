@@ -29,29 +29,29 @@ $Session = New-PSSession -ConnectionURI "http://$fqdnMailboxServer/powershell?se
 Import-PSSession $Session
 
 
-$z=$null
-foreach($z in $AD_MB_Gruppene){
-    $MB_Quota = (($z.name.Substring($Pre_MBADG_String.Length-4).substring(0,($z.name.Substring($Pre_MBADG_String.Length-4)).length-3))).tostring()
+$z = $null
+foreach ($z in $AD_MB_Gruppene) {
+    $MB_Quota = (($z.name.Substring($Pre_MBADG_String.Length - 4).substring(0, ($z.name.Substring($Pre_MBADG_String.Length - 4)).length - 3))).tostring()
     
-    $u=$null
-    foreach($u in Get-ADGroupMember $z.Name){
-            $MB_Quota_ProhibitSendReceive = $MB_Quota
-            $MB_Quota_ProhibitSend = $MB_Quota_ProhibitSendReceive - $MB_Quota_Warning_sub
-            $MB_Quota_ProhibitSend = [math]::Round($MB_Quota_ProhibitSend)
-            $MB_Quota_Warning = $MB_Quota_ProhibitSend - $MB_Quota_Warning_sub
-            $MB_Quota_Warning = [math]::Round($MB_Quota_Warning)
+    $u = $null
+    foreach ($u in Get-ADGroupMember $z.Name) {
+        $MB_Quota_ProhibitSendReceive = $MB_Quota
+        $MB_Quota_ProhibitSend = $MB_Quota_ProhibitSendReceive - $MB_Quota_Warning_sub
+        $MB_Quota_ProhibitSend = [math]::Round($MB_Quota_ProhibitSend)
+        $MB_Quota_Warning = $MB_Quota_ProhibitSend - $MB_Quota_Warning_sub
+        $MB_Quota_Warning = [math]::Round($MB_Quota_Warning)
                 
-            Set-Mailbox -Identity $u.objectGUID.ToString() -IssueWarningQuota $MB_Quota_Warning -ProhibitSendQuota $MB_Quota_ProhibitSend -ProhibitSendReceiveQuota $MB_Quota_ProhibitSendReceive -UseDatabaseQuotaDefaults $false
+        Set-Mailbox -Identity $u.objectGUID.ToString() -IssueWarningQuota $MB_Quota_Warning -ProhibitSendQuota $MB_Quota_ProhibitSend -ProhibitSendReceiveQuota $MB_Quota_ProhibitSendReceive -UseDatabaseQuotaDefaults $false
     }
 }
 
-$z=$null
-foreach($z in $AD_OA_Gruppene){
-    $OA_Quota = (($z.name.Substring($Pre_OAADG_String.Length-4).substring(0,($z.name.Substring($Pre_OAADG_String.Length-4)).length-3))).tostring()
+$z = $null
+foreach ($z in $AD_OA_Gruppene) {
+    $OA_Quota = (($z.name.Substring($Pre_OAADG_String.Length - 4).substring(0, ($z.name.Substring($Pre_OAADG_String.Length - 4)).length - 3))).tostring()
     
-    $u=$null
-    foreach($u in Get-ADGroupMember $z.Name){
-        if(ischer-ir-lokale-MDB $u.SamAccountName){
+    $u = $null
+    foreach ($u in Get-ADGroupMember $z.Name) {
+        if (ischer-ir-lokale-MDB $u.SamAccountName) {
             $OA_Quota_Warning = $OA_Quota - $OA_Quota_Warning_sub
 
             Set-Mailbox -Identity $u.objectGUID.ToString() -ArchiveQuota $OA_Quota -ArchiveWarningQuota $OA_Quota_Warning
