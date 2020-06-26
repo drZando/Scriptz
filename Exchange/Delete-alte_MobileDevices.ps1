@@ -26,16 +26,16 @@ $Jetz = Get-Date -Format yyyy.MM.dd_HH:mm
 $denne = (Get-Date).AddDays($gnadefrischt).ToString('dd.MM.yyyy hh:mm:ss')
 $aui_graetli = Get-MobileDevice
 
-foreach($h in $aui_graetli){
+foreach ($h in $aui_graetli) {
     $sync_status = Get-MobileDeviceStatistics $h
     $z = $sync_status.LastSuccessSync
 
-    if(!$z){
+    if (!$z) {
         Remove-MobileDevice ($h.Identity).ToString() -Confirm:$false
         Add-Content -Path $Log -Value "$($Jetz);DELETE-Ke_LastSuccessSync;$($h.Identity);$($h.FriendlyName);$($h.DeviceUserAgent)"
     }
 
-    if((get-date $denne) -gt (get-date $z)){
+    if ((get-date $denne) -gt (get-date $z)) {
         Remove-MobileDevice ($h.Identity).ToString() -Confirm:$false
         Add-Content -Path $Log -Value "$($Jetz);DELETE-LastSuccessSync_zLang;$($h.Identity);$($h.FriendlyName);$($h.DeviceUserAgent)"
 
